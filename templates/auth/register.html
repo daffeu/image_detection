@@ -1,6 +1,14 @@
-<div class="container">
+{% extends "base.html" %}
+
+
+{% block title %}
+  <title>Signup</title>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
     <div class="row">
-      <h5 class="display-5">Face Detection</h5>
+      <h5 class="display-5">Signup to Face Detected</h5>
       <div class="text-danger font-weight-bold">
           {% for error in errors %}
             <li>{{error}}</li>
@@ -21,4 +29,5 @@
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
     </div>
-</div>
+  </div>
+{% endblock %}

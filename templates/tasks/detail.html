@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+  <title>Task Detail</title>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="display-5">Task Detail</h1>
+    </div>
+  </div>
+
+  <div class="row">
+      <table class="table table-striped table-hover">
+        <tbody>
+          <tr>
+            <th scope="row">Task Title</th>
+            <td colspan="2">{{task.title}}</td>
+          </tr>
+          <tr>
+            <th scope="row">URL Data</th>
+            <td colspan="2">{{task.url_data}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Description</th>
+            <td colspan="2">{{task.description}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Data Published</th>
+            <td colspan="2">{{task.date_posted}}</td>
+          </tr>
+        </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
