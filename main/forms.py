@@ -10,15 +10,15 @@ class TaskCreateForm:
         self.errors: List = []
         self.title: Optional[str] = None
         self.description: Optional[str] = None
-        self.url_data: Optional[str] = None
+        self.links: Optional[List] = list()
 
     async def load_data(self):
         form = await self.request.form()
-        self.title = form.get("title")
-        self.description = form.get("description")
-        self.url_data = form.get("url_data")
+        self.title = form.get("title", "Untitled")
+        self.description = form.get("description", "No description")
+        self.links = form.get("links").split(', ')
 
     def is_valid(self):
-        if not self.errors:
+        if not self.errors and self.links:
             return True
         return False
