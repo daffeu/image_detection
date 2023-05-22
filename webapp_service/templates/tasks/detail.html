@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+  <title>Task Detail</title>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="display-5">Task Detail:</h1>
+    </div>
+  </div>
+
+  <div class="row">
+      <table class="table table-striped table-hover">
+        <tbody>
+          <tr>
+            <th scope="row">Task Title</th>
+            <td colspan="2">{{task.title}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Description</th>
+            <td colspan="2">{{task.description}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Data Published</th>
+            <td colspan="2">{{task.create_date}}</td>
+          </tr>
+        </tbody>
+    </table>
+  </div>
+
+  <div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="display-5">Links:</h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th scope="col">№</th>
+          <th scope="col">Link</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for link in task.links %}
+        <tr>
+          <th scope="row">{{loop.index}}</th>
+          <td><a href="{{link}}">{{link}}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <form action="" onsubmit="sendMessage(event)">
+    <input type="text" id="messageText" autocomplete="off"/>
+    <button>Send</button>
+  </form>
+    <ul id='messages'>
+    </ul>
+    <script>
+        var ws = new WebSocket("ws://localhost:8000/task_ws?task_id=id_{{task._id['$oid']}}");
+        ws.onmessage = function(event) {
+            var messages = document.getElementById('messages');
+            var message = document.createElement('li');
+            var content = JSON.parse(event.data);
+            message.innerHTML = `<strong>${content.message} :</strong>`;
+            messages.appendChild(message);
+        };
+        function sendMessage(event) {
+            var input = document.getElementById("messageText")
+            var data = {
+                "message": input.value
+            }
+            ws.send(JSON.stringify(data));
+            input.value = ''
+            event.preventDefault();
+        }
+    </script>
+</div>
+{% endblock %}
