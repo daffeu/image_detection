@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+
+{% block head %}
+  <script>
+    var ws = new WebSocket("ws://localhost:8000/task_ws?task_id=id_{{task._id['$oid']}}");
+    ws.onmessage = function(event) {
+        var messages = document.getElementById('messages');
+        var message = document.createElement('li');
+        var content = JSON.parse(event.data);
+        message.setAttribute('class', 'font-weight-bold text-info')
+        message.innerHTML = `<strong>${content.message} :</strong>`;
+        messages.appendChild(message);
+    };
+    function sendMessage(event) {
+        var data = {
+            "message": "Start"
+        }
+        ws.send(JSON.stringify(data));
+        event.preventDefault();
+    }
+  </script>
+
+{% endblock %}
+
+{% block title %}
+  <title>Task Detail</title>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="display-4">Task Detail:</h1>
+    </div>
+  </div>
+
+  <div class="row">
+      <table class="table table-striped table-hover">
+        <tbody>
+          <tr>
+            <th scope="row">Task Title</th>
+            <td colspan="2">{{task.title}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Description</th>
+            <td colspan="2">{{task.description}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Data Published</th>
+            <td colspan="2">{{task.create_date}}</td>
+          </tr>
+        </tbody>
+    </table>
+  </div>
+
+  <button class="btn btn-danger" value="Run" id="messageText" onclick="sendMessage(event); this.disabled=true; this.innerHTML='Running';">
+  Run
+  </button>
+  <button class="btn btn-secondary" id="delete_task" onclick="deleteTask()">Delete</button>
+
+  <ul id='messages'>
+  </ul>
+
+  <div class="row my-5">
+      <h3 class="text-left display-4">Update a Task Post</h3>
+      <form method="POST" id="update-task">
+        <div class="mb-3">
+          <input type="text" class="form-control" name="title" id="update-title" value="{{title}}" placeholder="Task Title here">
+        </div>
+        <div class="mb-3">
+          <textarea class="form-control" name="description" id="update-descr" rows="2" placeholder="Please provide a complete description of the task."></textarea>
+        </div>
+        <div class="mb-3">
+          <textarea class="form-control" name="links" id="update-links" rows="2" placeholder="Provide links to pages from which you want to extract images in the following format: 'http://vk.com/test, http://vk.com/test2, ...'"></textarea></div>
+        <button type="submit" class="btn btn-success">Update task</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const deleteButton = document.getElementById('delete_task');
+
+    deleteButton.addEventListener('click', async () => {
+      try {
+        const response = await fetch('/details/{{task._id['$oid']}}', {
+          method: 'DELETE'
+        });
+
+        if (response.status === 204) {
+          window.location.href = '/';
+        } else {
+          throw new Error('Ошибка при выполнении запроса');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  </script>
+
+  <script>
+    const form = document.getElementById('update-task');
+
+    form.addEventListener('submit', async () => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const json = {};
+
+      for (const [key, value] of formData.entries()) {
+        if (value) {
+          json[key] = value;
+        }
+      }
+<!--      const title = document.getElementById('update-title').value;-->
+<!--      const description = document.getElementById('update-descr').value;-->
+<!--      const links = document.getElementById('update-links').value;-->
+
+      try {
+          const response = await fetch('/details/{{task._id['$oid']}}', {
+              method: 'PATCH',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(json)
+          });
+
+          if (response.status == 204) {
+              window.location.reload();
+          } else {
+              console.error(response.statusText);
+          }
+      } catch (error) {
+          console.error(error);
+      }
+    });
+  </script>
+
+  <div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="display-4">Links:</h1>
+    </div>
+  </div>
+  <div class="row">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th scope="col">№</th>
+          <th scope="col">Link</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for link in task.links %}
+        <tr>
+          <th scope="row">{{loop.index}}</th>
+          <td><a href="{{link}}">{{link}}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

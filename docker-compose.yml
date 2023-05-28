@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  
+  #mongo_db
+  mongo:
+    image: mongo
+    container_name: web_mongo
+    ports:
+      - 27017:27017
+    networks:
+      - custom
+
+  #rabbitmq    
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: web_rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - custom
+
+  #webapp_service
+  webapp:
+    container_name: "web_app_service"
+    build:
+      context: ./webapp_service
+      dockerfile: Dockerfile
+    command: uvicorn app:app --host 0.0.0.0
+    depends_on:
+      - rabbitmq
+      - mongo
+    volumes:
+      - .:/webapp_service
+    ports:
+      - 8000:8000
+    networks:
+      - custom
+
+  #internal_vkapi_service
+  internal_vkapi:
+    container_name: "internal_vk_api"
+    build:
+      context: ./internal_vk_api_service
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+      - mongo
+    command: uvicorn app:app --host 0.0.0.0 --port 5051
+    volumes:
+      - .:/internal_vk_api_service
+    ports:
+      - 5051:5051
+    networks:
+      - custom
+
+networks:
+  custom:
+    driver: bridge
