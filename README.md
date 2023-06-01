@@ -1,11 +1,16 @@
-**Run MongoDB in Docker Container:**
-
+**.env Example file**
 ```sh
-docker run -d --name test-mongo -p 27017:27017 mongo
+VK_TOKEN='your_vk_token'
+UNIQUE_PREFIX='test'
 ```
 
-**Run RabbitMQ in Docker Container**
+
+**Docker-compose run**
+
 ```sh
-docker run -d -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=password rabbitmq:3.11-management
+docker-compose build
 ```
 
+```sh
+docker-compose run -d
+```

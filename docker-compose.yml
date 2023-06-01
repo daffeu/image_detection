@@ -1,63 +1,70 @@
 version: '3'
 
 services:
-  
-  #mongo_db
+
+  web_server:
+    image: nginx:alpine
+    depends_on:
+      - webapp
+      - internal_vkapi
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+
   mongo:
     image: mongo
-    container_name: web_mongo
     ports:
       - 27017:27017
-    networks:
-      - custom
-
-  #rabbitmq    
+    volumes:
+      - data:/data/db
+    
   rabbitmq:
     image: rabbitmq:3.11-management
-    container_name: web_rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
-    networks:
-      - custom
-
-  #webapp_service
+        
   webapp:
-    container_name: "web_app_service"
     build:
       context: ./webapp_service
       dockerfile: Dockerfile
-    command: uvicorn app:app --host 0.0.0.0
     depends_on:
       - rabbitmq
       - mongo
+    environment:
+      MONGO_HOST: mongo
+      AMQP_URI: rabbitmq
+      AMQP_PORT: 5672
+    env_file:
+      - .env
     volumes:
-      - .:/webapp_service
+      - ./webapp_service:/webapp_service
     ports:
       - 8000:8000
-    networks:
-      - custom
-
-  #internal_vkapi_service
+    command: uvicorn app:app --host 0.0.0.0
+    
   internal_vkapi:
-    container_name: "internal_vk_api"
     build:
       context: ./internal_vk_api_service
       dockerfile: Dockerfile
     depends_on:
       - rabbitmq
       - mongo
-    command: uvicorn app:app --host 0.0.0.0 --port 5051
+    environment:
+      AMQP_URI: rabbitmq
+      AMQP_PORT: 5672
+    env_file:
+      - .env 
     volumes:
       - .:/internal_vk_api_service
     ports:
       - 5051:5051
-    networks:
-      - custom
+    command: uvicorn app:app --host 0.0.0.0 --port 5051
 
-networks:
-  custom:
-    driver: bridge
+volumes:
+  data:
+
